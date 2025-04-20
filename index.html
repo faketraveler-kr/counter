@@ -125,12 +125,19 @@
         const counterElement = document.getElementById('counter');
         const resetButton = document.getElementById('resetButton');
         const body = document.body;
+        let isAppActive = true;  // 앱 활성화 상태 추적
+
+        // 앱 상태 변경 감지
+        document.addEventListener('visibilitychange', () => {
+            isAppActive = document.visibilityState === 'visible';
+        });
 
         // 더블 탭 방지
         let lastTap = 0;
         const doubleTapDelay = 300; // 300ms
 
         function handleTap(event) {
+            if (!isAppActive) return;  // 앱이 비활성화 상태면 터치 무시
             event.preventDefault();
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;

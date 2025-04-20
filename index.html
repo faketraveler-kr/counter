@@ -6,8 +6,8 @@
     <title>인터랙티브 카운터</title>
     <meta name="description" content="터치할 때마다 색상이 변하는 인터랙티브 카운터 앱">
     <meta name="theme-color" content="#f8e1ff">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     <style>
         body {
             margin: 0;
@@ -90,7 +90,7 @@
         // 서비스 워커 등록
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then(registration => {
                         console.log('ServiceWorker 등록 성공: ', registration.scope);
                     })

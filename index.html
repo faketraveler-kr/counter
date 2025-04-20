@@ -33,7 +33,6 @@
             justify-content: center;
             align-items: center;
             background-color: hsl(306, 60%, 75%);  /* 보라색 (0.85 * 360 = 306), 채도 60%, 명도 75% */
-            transition: background-color 0.3s ease;
             font-family: Arial, sans-serif;
             touch-action: manipulation;
             -webkit-touch-callout: none;
@@ -158,26 +157,24 @@
                 count++;
                 counterElement.textContent = count;
                 updateColor();
-                
-                // 배경에 깜빡임 효과 추가
-                body.classList.add('flash');
-                setTimeout(() => {
-                    body.classList.remove('flash');
-                }, 300);
+                addFlashEffect();
             } else {
                 // 첫 번째 탭
                 count++;
                 counterElement.textContent = count;
                 updateColor();
-                
-                // 배경에 깜빡임 효과 추가
-                body.classList.add('flash');
-                setTimeout(() => {
-                    body.classList.remove('flash');
-                }, 300);
+                addFlashEffect();
             }
             
             lastTap = currentTime;
+        }
+
+        // 깜빡임 효과 추가 함수
+        function addFlashEffect() {
+            body.classList.add('flash');
+            setTimeout(() => {
+                body.classList.remove('flash');
+            }, 300);
         }
 
         // 터치 이벤트 리스너 등록

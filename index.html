@@ -138,6 +138,17 @@
 
         function handleTap(event) {
             if (!isAppActive) return;  // 앱이 비활성화 상태면 터치 무시
+            
+            // 터치 이벤트의 시작 위치 확인
+            const touch = event.touches ? event.touches[0] : event;
+            const startY = touch.clientY;
+            const windowHeight = window.innerHeight;
+            
+            // 화면 하단 10% 영역에서 시작하는 터치는 무시
+            if (startY > windowHeight * 0.9) {
+                return;
+            }
+            
             event.preventDefault();
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;

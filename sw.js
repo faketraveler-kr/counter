@@ -1,4 +1,5 @@
-const CACHE_NAME = `counter-app-${new Date().toISOString().split('T')[0]}`;
+const SW_VERSION = '1.0.0';  // 서비스 워커 버전
+const CACHE_NAME = `counter-app-${new Date().toISOString().split('T')[0]}-${SW_VERSION}`;
 const urlsToCache = [
   './',
   './index.html',

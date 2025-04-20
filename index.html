@@ -114,6 +114,16 @@
                 navigator.serviceWorker.register('./sw.js')
                     .then(registration => {
                         console.log('ServiceWorker 등록 성공: ', registration.scope);
+                        
+                        // 새로운 서비스 워커가 있을 때 자동으로 페이지 새로고침
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    window.location.reload();
+                                }
+                            });
+                        });
                     })
                     .catch(error => {
                         console.log('ServiceWorker 등록 실패: ', error);

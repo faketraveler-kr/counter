@@ -1,4 +1,4 @@
-const CACHE_NAME = 'counter-app-v1';
+const CACHE_NAME = `counter-app-${new Date().toISOString().split('T')[0]}`;
 const urlsToCache = [
   './',
   './index.html',
@@ -21,6 +21,8 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  // 새로운 서비스 워커가 설치되면 즉시 활성화
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
@@ -68,4 +70,6 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  // 새로운 서비스 워커가 활성화되면 클라이언트 제어권을 즉시 가져옴
+  event.waitUntil(clients.claim());
 }); 

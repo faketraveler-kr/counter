@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>인터랙티브 카운터</title>
+    <meta name="description" content="터치할 때마다 색상이 변하는 인터랙티브 카운터 앱">
+    <meta name="theme-color" content="#f8e1ff">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: hsl(306, 60%, 75%);  /* 보라색 (0.85 * 360 = 306), 채도 60%, 명도 75% */
+            transition: background-color 0.3s ease;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        @keyframes flash {
+            0% { background-color: var(--current-color); }
+            50% { background-color: white; }
+            100% { background-color: var(--current-color); }
+        }
+
+        @keyframes fade {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .flash {
+            animation: flash 0.3s ease;
+        }
+
+        .fade {
+            animation: fade 0.5s ease;
+        }
+
+        #counter {
+            font-size: 8rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        #resetButton {
+            position: fixed;
+            bottom: 2rem;
+            padding: 0.5rem 1rem;
+            font-size: 1.2rem;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+            z-index: 1;
+        }
+
+        #resetButton:hover {
+            opacity: 1;
+        }
+
+        #resetButton:active {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="counter">0</div>
+    <button id="resetButton">Reset</button>
+
+    <script>
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker 등록 성공: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker 등록 실패: ', error);
+                    });
+            });
+        }
+
+        let count = 0;
+        const counterElement = document.getElementById('counter');
+        const resetButton = document.getElementById('resetButton');
+        const body = document.body;
+
+        // 더블 탭 방지
+        let lastTap = 0;
+        const doubleTapDelay = 300; // 300ms
+
+        function handleTap(event) {
+            event.preventDefault();
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < doubleTapDelay && tapLength > 0) {
+                // 더블 탭으로 간주하고 한 번만 증가
+                count++;
+                counterElement.textContent = count;
+                updateColor();
+                
+                // 배경에 깜빡임 효과 추가
+                body.classList.add('flash');
+                setTimeout(() => {
+                    body.classList.remove('flash');
+                }, 300);
+            } else {
+                // 첫 번째 탭
+                count++;
+                counterElement.textContent = count;
+                updateColor();
+                
+                // 배경에 깜빡임 효과 추가
+                body.classList.add('flash');
+                setTimeout(() => {
+                    body.classList.remove('flash');
+                }, 300);
+            }
+            
+            lastTap = currentTime;
+        }
+
+        // 터치 이벤트 리스너 등록
+        document.addEventListener('touchstart', handleTap, { passive: false });
+        document.addEventListener('click', handleTap);
+
+        // 줌 방지
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        function updateColor() {
+            const startHue = 306;  // 보라색 시작 (0.85 * 360)
+            const endHue = 0;      // 빨간색 종료
+            
+            let hue, saturation, lightness;
+            
+            if (count <= 100) {
+                // 0-100: 보라색에서 빨간색으로
+                hue = startHue - (count / 100) * (startHue - endHue);
+                saturation = 60;
+                lightness = 75;
+            } else if (count <= 200) {
+                // 100-200: 빨간색에서 진한 빨간색으로
+                hue = endHue;
+                saturation = 60 + ((count - 100) / 100) * 40; // 60%에서 100%까지
+                lightness = 75 - ((count - 100) / 100) * 25;  // 75%에서 50%까지
+            } else {
+                // 200 이상: 최종 진한 빨간색 유지
+                hue = endHue;
+                saturation = 100;
+                lightness = 50;
+            }
+            
+            const currentColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            body.style.backgroundColor = currentColor;
+            body.style.setProperty('--current-color', currentColor);
+        }
+
+        function updateCounter() {
+            count++;
+            counterElement.textContent = count;
+            updateColor();
+            
+            // 배경에 깜빡임 효과 추가
+            body.classList.add('flash');
+            setTimeout(() => {
+                body.classList.remove('flash');
+            }, 300);
+        }
+
+        function resetCounter(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 페이드 효과 추가
+            body.classList.add('fade');
+            counterElement.classList.add('fade');
+            
+            setTimeout(() => {
+                count = 0;
+                counterElement.textContent = count;
+                updateColor();
+                
+                setTimeout(() => {
+                    body.classList.remove('fade');
+                    counterElement.classList.remove('fade');
+                }, 500);
+            }, 250);
+        }
+
+        // 리셋 버튼에 터치와 클릭 이벤트 모두 추가
+        resetButton.addEventListener('touchstart', resetCounter, { passive: false });
+        resetButton.addEventListener('click', resetCounter);
+    </script>
+</body>
+</html> 

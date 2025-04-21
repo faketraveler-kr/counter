@@ -139,6 +139,25 @@
             font-size: 1.2rem;
             cursor: pointer;
             padding: 0.5rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        /* iOS 설치 가이드 스타일 */
+        .ios-guide {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .ios-guide span {
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -175,21 +194,27 @@
 
         // 설치 버튼 클릭 이벤트
         installButton.addEventListener('click', async () => {
-            if (deferredPrompt) {
+            if (isIOS) {
+                // iOS Safari 설치 가이드
+                installPrompt.innerHTML = `
+                    <div class="ios-guide">
+                        <span>1. 하단 공유 버튼을 탭하세요<br>
+                        2. '홈 화면에 추가'를 탭하세요<br>
+                        3. '추가'를 탭하세요</span>
+                        <button class="close" id="closePrompt">×</button>
+                    </div>
+                `;
+                // 닫기 버튼 이벤트 리스너 다시 추가
+                document.getElementById('closePrompt').addEventListener('click', () => {
+                    installPrompt.style.display = 'none';
+                });
+            } else if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
                     console.log('사용자가 PWA 설치를 수락했습니다');
                 }
                 deferredPrompt = null;
-            } else if (isIOS) {
-                // iOS Safari 설치 가이드
-                installPrompt.innerHTML = `
-                    <span>1. 하단 공유 버튼을 탭하세요<br>
-                    2. '홈 화면에 추가'를 탭하세요<br>
-                    3. '추가'를 탭하세요</span>
-                    <button class="close" id="closePrompt">×</button>
-                `;
             }
         });
 

@@ -125,6 +125,11 @@
             z-index: 1000;
             display: none;
             font-size: 0.9rem;
+            touch-action: none;  /* 터치 이벤트 방지 */
+        }
+
+        #installPrompt * {
+            pointer-events: auto;  /* 팝업 내부 요소들은 이벤트 허용 */
         }
 
         #installPrompt button {
@@ -183,7 +188,7 @@
 
     <script>
         // 버전 정보 표시
-        const APP_VERSION = '1.0.4';  // 설치 버튼 이벤트 버그 수정
+        const APP_VERSION = '1.0.5';  // 팝업 영역 클릭 이벤트 전파 방지
         document.getElementById('version').textContent = `v${APP_VERSION}`;
 
         // PWA 설치 유도 관련 변수
@@ -191,6 +196,12 @@
         const installPrompt = document.getElementById('installPrompt');
         const installButton = document.getElementById('installButton');
         const closePrompt = document.getElementById('closePrompt');
+
+        // 팝업 영역 클릭 이벤트 전파 방지
+        installPrompt.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);  // 캡처링 단계에서 이벤트 처리
 
         // iOS Safari에서 설치 유도
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;

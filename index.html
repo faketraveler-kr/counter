@@ -76,6 +76,11 @@
             padding: 0;
             line-height: 1;
             z-index: 1;
+            width: 100%;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
         #resetButton {
@@ -183,7 +188,7 @@
 
     <script>
         // 버전 정보 표시
-        const APP_VERSION = '1.0.7';  // X 버튼 제거 및 UI 개선
+        const APP_VERSION = '1.0.8';  // 숫자 정렬 개선
         document.getElementById('version').textContent = `v${APP_VERSION}`;
 
         // PWA 설치 유도 관련 변수

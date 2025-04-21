@@ -101,35 +101,102 @@
         #resetButton:active {
             opacity: 0.6;
         }
+
+        /* PWA 설치 유도 팝업 스타일 */
+        #installPrompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        #installPrompt button {
+            background-color: white;
+            color: black;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        #installPrompt .close {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
     </style>
 </head>
 <body>
+    <div id="installPrompt">
+        <span>홈 화면에 추가하여 더 편리하게 사용하세요!</span>
+        <button id="installButton">설치하기</button>
+        <button class="close" id="closePrompt">×</button>
+    </div>
     <div id="counter">0</div>
     <button id="resetButton">Reset</button>
 
     <script>
-        // 서비스 워커 등록
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker 등록 성공: ', registration.scope);
-                        
-                        // 새로운 서비스 워커가 있을 때 자동으로 페이지 새로고침
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    window.location.reload();
-                                }
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker 등록 실패: ', error);
-                    });
-            });
+        // PWA 설치 유도 관련 변수
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        const installButton = document.getElementById('installButton');
+        const closePrompt = document.getElementById('closePrompt');
+
+        // iOS Safari에서 설치 유도
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        
+        if (isIOS && !isStandalone) {
+            installPrompt.style.display = 'block';
         }
+
+        // Android Chrome에서 설치 유도
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'block';
+        });
+
+        // 설치 버튼 클릭 이벤트
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('사용자가 PWA 설치를 수락했습니다');
+                }
+                deferredPrompt = null;
+            } else if (isIOS) {
+                // iOS Safari 설치 가이드
+                installPrompt.innerHTML = `
+                    <span>1. 하단 공유 버튼을 탭하세요<br>
+                    2. '홈 화면에 추가'를 탭하세요<br>
+                    3. '추가'를 탭하세요</span>
+                    <button class="close" id="closePrompt">×</button>
+                `;
+            }
+        });
+
+        // 팝업 닫기 버튼
+        closePrompt.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
 
         let count = 0;
         const counterElement = document.getElementById('counter');
@@ -260,6 +327,29 @@
         // 리셋 버튼에 터치와 클릭 이벤트 모두 추가
         resetButton.addEventListener('touchstart', resetCounter, { passive: false });
         resetButton.addEventListener('click', resetCounter);
+
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker 등록 성공: ', registration.scope);
+                        
+                        // 새로운 서비스 워커가 있을 때 자동으로 페이지 새로고침
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    window.location.reload();
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker 등록 실패: ', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html> 

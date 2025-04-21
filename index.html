@@ -105,8 +105,8 @@
         /* 버전 정보 스타일 */
         #version {
             position: fixed;
-            bottom: 0.5rem;
-            right: 0.5rem;
+            bottom: 2rem;
+            right: 1rem;
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.6);
             z-index: 1;
@@ -157,25 +157,6 @@
             font-size: 0.9rem;
         }
 
-        #installPrompt .close {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 2rem;
-            height: 2rem;
-        }
-
         /* iOS 설치 가이드 스타일 */
         .ios-guide {
             display: flex;
@@ -195,7 +176,6 @@
     <div id="installPrompt">
         <span>홈 화면에 추가하여 더 편리하게 사용하세요!</span>
         <button id="installButton">설치하기</button>
-        <button class="close" id="closePrompt">×</button>
     </div>
     <div id="counter">0</div>
     <button id="resetButton">Reset</button>
@@ -203,14 +183,13 @@
 
     <script>
         // 버전 정보 표시
-        const APP_VERSION = '1.0.6';  // 팝업 이벤트 및 스타일 버그 수정
+        const APP_VERSION = '1.0.7';  // X 버튼 제거 및 UI 개선
         document.getElementById('version').textContent = `v${APP_VERSION}`;
 
         // PWA 설치 유도 관련 변수
         let deferredPrompt;
         const installPrompt = document.getElementById('installPrompt');
         const installButton = document.getElementById('installButton');
-        const closePrompt = document.getElementById('closePrompt');
         const overlay = document.getElementById('overlay');
         
         // 팝업 표시 함수
@@ -262,15 +241,8 @@
                         <span>1. 하단 공유 버튼을 탭하세요<br>
                         2. '홈 화면에 추가'를 탭하세요<br>
                         3. '추가'를 탭하세요</span>
-                        <button class="close" id="closePrompt">×</button>
                     </div>
                 `;
-                // 닫기 버튼 이벤트 리스너 다시 추가
-                document.getElementById('closePrompt').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    hideInstallPrompt();
-                });
             } else if (deferredPrompt) {
                 try {
                     // Android Chrome 설치 프롬프트 표시
@@ -286,13 +258,6 @@
                     console.error('설치 프롬프트 표시 중 오류 발생:', error);
                 }
             }
-        });
-
-        // 팝업 닫기 버튼
-        closePrompt.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            hideInstallPrompt();
         });
 
         let count = 0;

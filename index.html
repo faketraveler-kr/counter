@@ -118,7 +118,7 @@
             top: 0;
             left: 0;
             right: 0;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.8) !important; /* !important로 배경색 고정 */
             color: white;
             padding: 1rem;
             text-align: center;
@@ -126,10 +126,24 @@
             display: none;
             font-size: 0.9rem;
             touch-action: none;  /* 터치 이벤트 방지 */
+            pointer-events: auto; /* 이벤트 수신 활성화 */
         }
 
         #installPrompt * {
             pointer-events: auto;  /* 팝업 내부 요소들은 이벤트 허용 */
+        }
+
+        /* 모달 배경 오버레이 */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+            pointer-events: auto;
         }
 
         #installPrompt button {
@@ -177,6 +191,7 @@
     </style>
 </head>
 <body>
+    <div id="overlay"></div>
     <div id="installPrompt">
         <span>홈 화면에 추가하여 더 편리하게 사용하세요!</span>
         <button id="installButton">설치하기</button>
@@ -188,7 +203,7 @@
 
     <script>
         // 버전 정보 표시
-        const APP_VERSION = '1.0.5';  // 팝업 영역 클릭 이벤트 전파 방지
+        const APP_VERSION = '1.0.6';  // 팝업 이벤트 및 스타일 버그 수정
         document.getElementById('version').textContent = `v${APP_VERSION}`;
 
         // PWA 설치 유도 관련 변수
@@ -196,26 +211,42 @@
         const installPrompt = document.getElementById('installPrompt');
         const installButton = document.getElementById('installButton');
         const closePrompt = document.getElementById('closePrompt');
-
-        // 팝업 영역 클릭 이벤트 전파 방지
-        installPrompt.addEventListener('click', (event) => {
+        const overlay = document.getElementById('overlay');
+        
+        // 팝업 표시 함수
+        function showInstallPrompt() {
+            overlay.style.display = 'block';
+            installPrompt.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+        }
+        
+        // 팝업 숨김 함수
+        function hideInstallPrompt() {
+            overlay.style.display = 'none';
+            installPrompt.style.display = 'none';
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+        
+        // 오버레이 클릭 이벤트
+        overlay.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-        }, true);  // 캡처링 단계에서 이벤트 처리
+            hideInstallPrompt();
+        });
 
         // iOS Safari에서 설치 유도
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
         
         if (isIOS && !isStandalone) {
-            installPrompt.style.display = 'block';
+            showInstallPrompt();
         }
 
         // Android Chrome에서 설치 유도
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installPrompt.style.display = 'block';
+            showInstallPrompt();
         });
 
         // 설치 버튼 클릭 이벤트
@@ -238,7 +269,7 @@
                 document.getElementById('closePrompt').addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    installPrompt.style.display = 'none';
+                    hideInstallPrompt();
                 });
             } else if (deferredPrompt) {
                 try {
@@ -248,7 +279,7 @@
                     console.log(`사용자 선택: ${outcome}`);
                     if (outcome === 'accepted') {
                         console.log('사용자가 PWA 설치를 수락했습니다');
-                        installPrompt.style.display = 'none';
+                        hideInstallPrompt();
                     }
                     deferredPrompt = null;
                 } catch (error) {
@@ -261,7 +292,7 @@
         closePrompt.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            installPrompt.style.display = 'none';
+            hideInstallPrompt();
         });
 
         let count = 0;
@@ -280,6 +311,11 @@
         const doubleTapDelay = 300; // 300ms
 
         function handleTap(event) {
+            // 팝업이 표시 중이면 탭 처리 안함
+            if (installPrompt.style.display === 'block' || overlay.style.display === 'block') {
+                return;
+            }
+            
             if (!isAppActive) return;  // 앱이 비활성화 상태면 터치 무시
             
             // 터치 이벤트의 시작 위치 확인

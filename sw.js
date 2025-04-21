@@ -1,4 +1,4 @@
-const SW_VERSION = '1.0.5';  // 서비스 워커 버전 업데이트
+const SW_VERSION = '1.0.6';  // 서비스 워커 버전 업데이트
 const CACHE_NAME = `counter-app-${new Date().toISOString().split('T')[0]}-${SW_VERSION}`;
 const urlsToCache = [
   './',

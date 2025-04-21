@@ -1,4 +1,4 @@
-const SW_VERSION = '1.0.6';  // 서비스 워커 버전 업데이트
+const SW_VERSION = '1.0.7';  // Network First 전략 적용
 const CACHE_NAME = `counter-app-${new Date().toISOString().split('T')[0]}-${SW_VERSION}`;
 const urlsToCache = [
   './',
@@ -28,31 +28,21 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // 캐시에서 찾으면 캐시된 응답 반환
-        if (response) {
-          return response;
+        // 네트워크 요청 성공 시 응답을 캐시에 저장
+        if (response && response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
         }
-        
-        // 캐시에 없으면 네트워크 요청
-        return fetch(event.request).then(
-          response => {
-            // 유효한 응답이 아니면 그대로 반환
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            // 응답을 복제하여 캐시에 저장
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-              
-            return response;
-          }
-        );
+        return response;
+      })
+      .catch(() => {
+        // 네트워크 요청 실패 시 캐시에서 응답 반환
+        return caches.match(event.request);
       })
   );
 });

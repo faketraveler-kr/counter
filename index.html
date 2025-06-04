@@ -271,23 +271,25 @@
             if (installPrompt.style.display === 'block' || overlay.style.display === 'block') {
                 return;
             }
-            
             if (!isAppActive) return;  // 앱이 비활성화 상태면 터치 무시
-            
+
+            // 멀티터치(두 손가락 이상)일 때, 첫 번째 터치만 처리하고 추가 이벤트는 무시
+            if (event.touches && event.touches.length > 1) {
+                // 두 손가락 이상 터치 시, 추가 이벤트 무시 (한 번만 처리)
+                return;
+            }
+
             // 터치 이벤트의 시작 위치 확인
             const touch = event.touches ? event.touches[0] : event;
             const startY = touch.clientY;
             const windowHeight = window.innerHeight;
-            
             // 화면 하단 10% 영역에서 시작하는 터치는 무시
             if (startY > windowHeight * 0.9) {
                 return;
             }
-            
             event.preventDefault();
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
-            
             if (tapLength < doubleTapDelay && tapLength > 0) {
                 // 더블 탭으로 간주하고 한 번만 증가
                 count++;
@@ -301,7 +303,6 @@
                 updateColor();
                 addFlashEffect();
             }
-            
             lastTap = currentTime;
         }
 

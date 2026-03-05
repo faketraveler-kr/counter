@@ -1,4 +1,4 @@
-const SW_VERSION = '1.0.7';  // Network First 전략 적용
+const SW_VERSION = '1.0.8';  // Network First 전략 적용
 const CACHE_NAME = `counter-app-${new Date().toISOString().split('T')[0]}-${SW_VERSION}`;
 const urlsToCache = [
   './',

@@ -113,6 +113,16 @@
             opacity: 0.6;
         }
 
+        #version {
+            position: fixed;
+            bottom: 0.4rem;
+            right: 0.6rem;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.45);
+            z-index: 1;
+            pointer-events: none;
+        }
+
         /* PWA 설치 유도 팝업 스타일 */
         #installPrompt {
             position: fixed;
@@ -180,6 +190,7 @@
     </div>
     <div id="counter">0</div>
     <button id="resetButton">Reset</button>
+    <div id="version">v1.0.8</div>
 
     <script>
         // PWA 설치 유도 관련 변수

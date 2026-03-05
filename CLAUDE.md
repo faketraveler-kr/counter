@@ -159,6 +159,7 @@ There is no automated test suite. Manual testing on mobile browsers (iOS Safari,
 - **Touch event correctness:** Always attach both `touchstart` (with `{ passive: false }`) and `click` for interactive elements. Preserve existing `stopPropagation` / `preventDefault` calls on the reset button and overlay to avoid event bubbling into the counter.
 - **Service worker versioning:** Increment `SW_VERSION` in `sw.js` for every deployment that changes cached assets.
 - **Commit message language:** Commit messages are written in Korean (see git log for examples).
+- **AI 답변 언어:** 이 저장소에 관한 모든 AI 응답은 한국어로 작성한다.
 
 ---
 

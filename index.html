@@ -21,6 +21,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
+            background-color: hsl(306, 60%, 75%);  /* status bar 영역 포함 전체 초기 배경색 */
         }
 
         body {
@@ -57,6 +58,10 @@
         }
 
         .flash {
+            animation: flash 0.3s ease;
+        }
+
+        html.flash {
             animation: flash 0.3s ease;
         }
 
@@ -106,6 +111,16 @@
 
         #resetButton:active {
             opacity: 0.6;
+        }
+
+        #version {
+            position: fixed;
+            bottom: 0.4rem;
+            right: 0.6rem;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.45);
+            z-index: 1;
+            pointer-events: none;
         }
 
         /* PWA 설치 유도 팝업 스타일 */
@@ -175,6 +190,7 @@
     </div>
     <div id="counter">0</div>
     <button id="resetButton">Reset</button>
+    <div id="version">v1.0.8</div>
 
     <script>
         // PWA 설치 유도 관련 변수
@@ -309,8 +325,10 @@
         // 깜빡임 효과 추가 함수
         function addFlashEffect() {
             body.classList.add('flash');
+            document.documentElement.classList.add('flash');  // html 요소에도 적용 (상단 영역 포함)
             setTimeout(() => {
                 body.classList.remove('flash');
+                document.documentElement.classList.remove('flash');
             }, 300);
         }
 
@@ -349,6 +367,15 @@
             const currentColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
             body.style.backgroundColor = currentColor;
             body.style.setProperty('--current-color', currentColor);
+
+            // html 요소 배경색 동기화 (iOS status bar 영역 색상 반영)
+            document.documentElement.style.backgroundColor = currentColor;
+
+            // theme-color 메타 태그 동적 업데이트 (iOS status bar tint 반영)
+            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+            if (themeColorMeta) {
+                themeColorMeta.setAttribute('content', currentColor);
+            }
         }
 
         function updateCounter() {
@@ -358,8 +385,10 @@
             
             // 배경에 깜빡임 효과 추가
             body.classList.add('flash');
+            document.documentElement.classList.add('flash');  // html 요소에도 적용
             setTimeout(() => {
                 body.classList.remove('flash');
+                document.documentElement.classList.remove('flash');
             }, 300);
         }
 

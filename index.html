@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>웹 카운터</title>
     <meta name="description" content="터치할 때마다 색상이 변하는 웹 카운터 앱">
-    <meta name="theme-color" content="#f8e1ff">
+    <meta name="theme-color" content="hsl(306, 60%, 75%)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="카운터">
@@ -22,6 +22,13 @@
             height: 100%;
             overflow: hidden;
             background-color: hsl(306, 60%, 75%);
+        }
+
+        /* iOS 상태바 수정: html 요소에도 transition 필수
+           iOS PWA는 body가 아닌 html 요소의 배경색을 상태바에 반영 */
+        html {
+            min-height: 100%;
+            transition: background-color 0.5s ease;
         }
 
         body {
@@ -309,8 +316,14 @@
             body.style.setProperty('--current-color', currentColor);
             document.documentElement.style.backgroundColor = currentColor;
 
-            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-            if (themeColorMeta) themeColorMeta.setAttribute('content', currentColor);
+            // Android Chrome PWA: setAttribute로는 감지 못하는 케이스 있음
+            // 제거 후 재생성 방식이 더 안정적
+            let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+            if (themeColorMeta) themeColorMeta.remove();
+            themeColorMeta = document.createElement('meta');
+            themeColorMeta.name = 'theme-color';
+            themeColorMeta.content = currentColor;
+            document.head.appendChild(themeColorMeta);
         }
 
         function resetCounter(event) {
